@@ -111,7 +111,7 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-gray-950 text-white">
-      <header className="border-b border-gray-800 px-6 py-4">
+      <header className="border-b border-gray-800 px-4 py-3 md:px-6 md:py-4">
         <div className="flex items-center gap-2 mb-1">
           <h1 className="text-xl font-bold text-orange-400">
             幕張エリア 混雑予報
@@ -128,7 +128,7 @@ export default function Home() {
         </p>
       </header>
 
-      <div className="max-w-4xl mx-auto p-4 space-y-4">
+      <div className="max-w-4xl mx-auto p-3 md:p-4 space-y-3 md:space-y-4">
         {dayScores.length > 0 && (
           <CongestionCalendar
             dayScores={dayScores}
@@ -137,7 +137,7 @@ export default function Home() {
           />
         )}
 
-        <div className="text-lg font-semibold text-gray-200">
+        <div className="text-base md:text-lg font-semibold text-gray-200">
           {format(selectedDate, 'yyyy年M月d日（E）', { locale: ja })}
         </div>
 

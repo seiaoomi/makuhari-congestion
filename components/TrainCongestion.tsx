@@ -36,17 +36,17 @@ export default function TrainCongestion({ trainInfo }: { trainInfo: TrainInfo })
         <span className="text-blue-600 text-xs">京葉線・海浜幕張駅</span>
       </div>
 
-      <div className="bg-gray-900 p-4 space-y-4">
+      <div className="bg-gray-900 p-3 md:p-4 space-y-4">
         {/* スコアメーター */}
         <div className={`rounded-xl p-4 ${config.bg} border border-gray-800`}>
-          <div className="flex justify-between items-start mb-3">
+          <div className="flex justify-between items-center mb-3">
             <div>
-              <div className={`text-2xl font-bold ${config.color}`}>{config.label}</div>
+              <div className={`text-xl md:text-2xl font-bold ${config.color}`}>{config.label}</div>
               <div className="text-sm text-gray-400 mt-1">{trainInfo.summary}</div>
             </div>
-            <div className={`text-3xl font-black ${config.color}`}>
+            <div className={`text-2xl md:text-3xl font-black ${config.color}`}>
               {trainInfo.score}
-              <span className="text-base text-gray-500">/100</span>
+              <span className="text-sm md:text-base text-gray-500">/100</span>
             </div>
           </div>
           <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
@@ -60,11 +60,11 @@ export default function TrainCongestion({ trainInfo }: { trainInfo: TrainInfo })
         {/* 時間帯別グラフ */}
         <div>
           <p className="text-xs text-gray-500 mb-2">時間帯別混雑</p>
-          <div className="flex gap-1 items-end h-12">
+          <div className="flex gap-0.5 items-end h-10 md:h-12">
             {hours.map(hour => {
               const lvl = getLevelAt(hour);
               const heights: Record<CongestionLevel, string> = {
-                low: 'h-3', moderate: 'h-6', high: 'h-9', extreme: 'h-12',
+                low: 'h-2', moderate: 'h-4', high: 'h-7', extreme: 'h-10',
               };
               return (
                 <div key={hour} className="flex-1 flex flex-col items-center justify-end">
@@ -73,10 +73,10 @@ export default function TrainCongestion({ trainInfo }: { trainInfo: TrainInfo })
               );
             })}
           </div>
-          <div className="flex gap-1 mt-1">
+          <div className="flex gap-0.5 mt-1">
             {hours.map(hour => (
-              <div key={hour} className="flex-1 text-center text-xs text-gray-600">
-                {hour % 3 === 0 ? `${hour}` : ''}
+              <div key={hour} className="flex-1 text-center text-[10px] text-gray-600">
+                {hour % 6 === 0 ? `${hour}` : ''}
               </div>
             ))}
           </div>

@@ -45,7 +45,7 @@ export default function CongestionCalendar({
   return (
     <div className="bg-gray-900 rounded-xl p-4">
       <h2 className="font-semibold text-gray-200 mb-3">10日間の混雑予報</h2>
-      <div className="grid grid-cols-10 gap-1">
+      <div className="grid grid-cols-5 gap-1 md:grid-cols-10">
         {dayScores.map(({ date, score, level, condition }) => {
           const isSelected =
             format(date, 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd');
@@ -59,18 +59,18 @@ export default function CongestionCalendar({
                   : levelBg[level] + ' opacity-80 hover:opacity-100'
               }`}
             >
-              <div className="text-xs text-gray-400">
+              <div className="text-[10px] md:text-xs text-gray-400">
                 {format(date, 'E', { locale: ja })}
               </div>
-              <div className="text-sm font-semibold text-gray-200">
+              <div className="text-xs md:text-sm font-semibold text-gray-200">
                 {format(date, 'M/d')}
               </div>
-              <div className={`text-xs font-bold mt-0.5 ${levelText[level]}`}>
+              <div className={`text-[10px] md:text-xs font-bold mt-0.5 ${levelText[level]}`}>
                 {levelLabel[level]}
               </div>
-              <div className={`text-xs ${levelText[level]}`}>{score}</div>
+              <div className={`text-[10px] md:text-xs ${levelText[level]}`}>{score}</div>
               {condition && (
-                <div className="text-sm mt-0.5">{getWeatherIcon(condition)}</div>
+                <div className="text-xs md:text-sm mt-0.5">{getWeatherIcon(condition)}</div>
               )}
             </button>
           );

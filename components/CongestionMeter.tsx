@@ -15,17 +15,17 @@ export default function CongestionMeter({ score, level, summary }: {
   const config = levelConfig[level];
 
   return (
-    <div className={`rounded-xl p-5 ${config.bg} border border-gray-800`}>
-      <div className="flex justify-between items-start mb-3">
+    <div className={`rounded-xl p-4 ${config.bg} border border-gray-800`}>
+      <div className="flex justify-between items-center mb-3">
         <div>
-          <div className={`text-3xl font-bold ${config.color}`}>
+          <div className={`text-2xl md:text-3xl font-bold ${config.color}`}>
             {config.label}
           </div>
           <div className="text-sm text-gray-400 mt-1">{summary}</div>
         </div>
-        <div className={`text-4xl font-black ${config.color}`}>
+        <div className={`text-3xl md:text-4xl font-black ${config.color}`}>
           {score}
-          <span className="text-lg text-gray-500">/100</span>
+          <span className="text-base md:text-lg text-gray-500">/100</span>
         </div>
       </div>
 

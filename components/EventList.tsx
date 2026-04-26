@@ -1,3 +1,4 @@
+import { format, parseISO } from 'date-fns';
 import { MakuhariEvent } from '@/types';
 import { getVenueLabel, getTypeLabel, getAttendanceLabel } from '@/lib/events';
 
@@ -39,8 +40,8 @@ export default function EventList({ events }: { events: MakuhariEvent[] }) {
             <div className="font-medium text-gray-100 text-sm mb-1">{event.name}</div>
             <div className="text-xs text-gray-500 mb-2">
               {event.startDate === event.endDate
-                ? event.startDate
-                : `${event.startDate} 〜 ${event.endDate}`}
+                ? format(parseISO(event.startDate), 'M/d')
+                : `${format(parseISO(event.startDate), 'M/d')} 〜 ${format(parseISO(event.endDate), 'M/d')}`}
             </div>
             <div className="flex flex-wrap gap-1">
               <span className="text-xs px-2 py-0.5 rounded-full bg-gray-800 text-gray-300">
