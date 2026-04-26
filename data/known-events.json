@@ -1,0 +1,92 @@
+[
+  {
+    "id": "auto-salon-2026",
+    "name": "東京オートサロン",
+    "venue": "makuhari_messe",
+    "startDate": "2026-01-09",
+    "endDate": "2026-01-11",
+    "expectedAttendance": "massive",
+    "type": "exhibition",
+    "source": "known_events"
+  },
+  {
+    "id": "niconico-chokaigi-2026",
+    "name": "ニコニコ超会議",
+    "venue": "makuhari_messe",
+    "startDate": "2026-04-25",
+    "endDate": "2026-04-26",
+    "expectedAttendance": "massive",
+    "type": "festival",
+    "source": "known_events"
+  },
+  {
+    "id": "ceatec-2026",
+    "name": "CEATEC JAPAN",
+    "venue": "makuhari_messe",
+    "startDate": "2026-10-13",
+    "endDate": "2026-10-16",
+    "expectedAttendance": "large",
+    "type": "exhibition",
+    "source": "known_events"
+  },
+  {
+    "id": "makuhari-fireworks-2026",
+    "name": "幕張海浜公園花火大会",
+    "venue": "other",
+    "startDate": "2026-08-01",
+    "endDate": "2026-08-01",
+    "expectedAttendance": "large",
+    "type": "festival",
+    "source": "known_events"
+  },
+  {
+    "id": "aeon-summer-sale-2026",
+    "name": "イオンモール幕張新都心 夏のビッグセール",
+    "venue": "aeon_mall",
+    "startDate": "2026-07-11",
+    "endDate": "2026-07-13",
+    "expectedAttendance": "medium",
+    "type": "sale",
+    "source": "known_events"
+  },
+  {
+    "id": "aeon-winter-sale-2026",
+    "name": "イオンモール幕張新都心 冬のビッグセール",
+    "venue": "aeon_mall",
+    "startDate": "2026-01-02",
+    "endDate": "2026-01-04",
+    "expectedAttendance": "medium",
+    "type": "sale",
+    "source": "known_events"
+  },
+  {
+    "id": "aeon-gw-sale-2026",
+    "name": "イオンモール幕張新都心 GWセール",
+    "venue": "aeon_mall",
+    "startDate": "2026-04-29",
+    "endDate": "2026-05-05",
+    "expectedAttendance": "medium",
+    "type": "sale",
+    "source": "known_events"
+  },
+  {
+    "id": "costco-summer-sale-2026",
+    "name": "コストコ幕張 夏の大感謝セール",
+    "venue": "costco",
+    "startDate": "2026-08-08",
+    "endDate": "2026-08-09",
+    "expectedAttendance": "medium",
+    "type": "sale",
+    "source": "known_events"
+  },
+  {
+    "id": "costco-yearend-sale-2026",
+    "name": "コストコ幕張 年末大感謝セール",
+    "venue": "costco",
+    "startDate": "2026-12-19",
+    "endDate": "2026-12-20",
+    "expectedAttendance": "medium",
+    "type": "sale",
+    "source": "known_events"
+  }
+]
