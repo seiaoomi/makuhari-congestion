@@ -39,8 +39,12 @@ function getEventScore(event: MakuhariEvent): number {
 
   const venueMultiplier: Record<MakuhariEvent['venue'], number> = {
     makuhari_messe: 1.5,
+    zozo_marine: 1.2,
     aeon_mall: 0.8,
+    mitsui_outlet: 0.9,
     costco: 0.6,
+    beach_park: 0.5,
+    toyosuna_park: 0.3,
     other: 0.4,
   };
 
@@ -64,6 +68,7 @@ export function getHourlyPattern(
   const hasMorningEvent = events.some(e => e.type === 'exhibition');
   const hasNightEvent = events.some(e => e.type === 'concert');
   const hasMallSale = events.some(e => e.type === 'sale');
+  const hasSportsEvent = events.some(e => e.type === 'sports' && e.venue === 'zozo_marine');
 
   const patterns: TimeRange[] = [];
 
@@ -87,6 +92,14 @@ export function getHourlyPattern(
     patterns.push(
       { start: '16:00', end: '18:30', level: 'extreme' },
       { start: '21:00', end: '23:00', level: 'extreme' },
+    );
+  }
+
+  if (hasSportsEvent) {
+    // 野球ナイター（18時開始）：来場・帰宅で湾岸道路・357号が混雑
+    patterns.push(
+      { start: '16:30', end: '18:30', level: 'high' },
+      { start: '20:30', end: '22:30', level: score >= 50 ? 'extreme' : 'high' },
     );
   }
 

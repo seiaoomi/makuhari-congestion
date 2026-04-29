@@ -10,6 +10,7 @@ export interface CongestionPrediction {
   summary: string;
   events: MakuhariEvent[];
   trainInfo: TrainInfo;
+  toyosunaInfo: TrainInfo;
 }
 
 export interface TrainInfo {
@@ -30,12 +31,20 @@ export interface TimeRange {
 export interface MakuhariEvent {
   id: string;
   name: string;
-  venue: 'makuhari_messe' | 'aeon_mall' | 'costco' | 'other';
+  venue: 'makuhari_messe' | 'zozo_marine' | 'aeon_mall' | 'mitsui_outlet' | 'costco' | 'beach_park' | 'toyosuna_park' | 'other';
   startDate: string;
   endDate: string;
   expectedAttendance: 'small' | 'medium' | 'large' | 'massive';
   type: 'concert' | 'exhibition' | 'sports' | 'sale' | 'festival' | 'other';
   source: string;
+}
+
+export interface FacilityInfo {
+  venue: MakuhariEvent['venue'];
+  name: string;
+  score: number;
+  level: CongestionLevel;
+  activeEvents: MakuhariEvent[];
 }
 
 export interface WeatherFactor {

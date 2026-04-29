@@ -18,8 +18,12 @@ export function getAttendanceLabel(attendance: MakuhariEvent['expectedAttendance
 export function getVenueLabel(venue: MakuhariEvent['venue']): string {
   const labels: Record<MakuhariEvent['venue'], string> = {
     makuhari_messe: '幕張メッセ',
+    zozo_marine: 'ZOZOマリンスタジアム',
     aeon_mall: 'イオンモール幕張新都心',
+    mitsui_outlet: '三井アウトレットパーク幕張',
     costco: 'コストコ幕張',
+    beach_park: '幕張海浜公園',
+    toyosuna_park: '豊砂公園',
     other: 'その他',
   };
   return labels[venue];

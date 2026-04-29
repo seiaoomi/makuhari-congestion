@@ -14,14 +14,16 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ events: getFallbackEvents(year, month) });
   }
 
-  const [messeResult, aeonResult] = await Promise.allSettled([
+  const [messeResult, aeonResult, marinesResult] = await Promise.allSettled([
     fetchMakuhariMesseEvents(year, month),
     fetchAeonMallEvents(year, month),
+    fetchMarinesEvents(year, month),
   ]);
 
   const scraped: MakuhariEvent[] = [
     ...(messeResult.status === 'fulfilled' ? messeResult.value : []),
     ...(aeonResult.status === 'fulfilled' ? aeonResult.value : []),
+    ...(marinesResult.status === 'fulfilled' ? marinesResult.value : []),
   ];
 
   const fallback = getFallbackEvents(year, month);
@@ -108,6 +110,49 @@ attendanceの目安:
 - small: 小規模イベント（〜数千人）
 
 イベントが見つからない場合は空配列 [] を返してください。`,
+    }],
+  });
+
+  const text = response.content[0].type === 'text' ? response.content[0].text : '[]';
+  return JSON.parse(text.replace(/```json\n?|\n?```/g, '').trim());
+}
+
+async function fetchMarinesEvents(year: string, month: string): Promise<MakuhariEvent[]> {
+  const res = await fetch('https://www.marines.co.jp/schedule/', {
+    headers: { 'User-Agent': 'Mozilla/5.0 (compatible; CongestionApp/1.0)' },
+    next: { revalidate: 3600 },
+  });
+  const html = await res.text();
+
+  const response = await client.messages.create({
+    model: 'claude-haiku-4-5-20251001',
+    max_tokens: 2000,
+    messages: [{
+      role: 'user',
+      content: `以下の千葉ロッテマリーンズ公式サイトのHTMLから、${year}年${month}月のZOZOマリンスタジアムでのホームゲーム（試合・コンサート等）を抽出し、JSON配列で返してください。アウェーゲームは除外してください。
+
+HTML（最初の8000文字）:
+${html.substring(0, 8000)}
+
+以下の形式で返してください（JSONのみ、説明文不要）:
+[
+  {
+    "id": "marines-YYYYMMDD",
+    "name": "対戦相手を含む試合名（例：ロッテ vs 日本ハム）",
+    "venue": "zozo_marine",
+    "startDate": "YYYY-MM-DD",
+    "endDate": "YYYY-MM-DD",
+    "expectedAttendance": "medium",
+    "type": "sports",
+    "source": "marines_official"
+  }
+]
+
+注意：
+- ホームゲームのみ（ZOZOマリンスタジアム開催）
+- 連戦（3連戦等）は1試合ずつ別エントリで
+- コンサート等の非野球イベントは type を "concert" にし attendance を "large" に
+- 該当なしは空配列 [] を返す`,
     }],
   });
 

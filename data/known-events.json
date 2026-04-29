@@ -32,7 +32,7 @@
   {
     "id": "makuhari-fireworks-2026",
     "name": "幕張海浜公園花火大会",
-    "venue": "other",
+    "venue": "beach_park",
     "startDate": "2026-08-01",
     "endDate": "2026-08-01",
     "expectedAttendance": "large",
@@ -86,6 +86,56 @@
     "startDate": "2026-12-19",
     "endDate": "2026-12-20",
     "expectedAttendance": "medium",
+    "type": "sale",
+    "source": "known_events"
+  },
+  {
+    "id": "marines-opener-2026",
+    "name": "千葉ロッテマリーンズ 開幕ホームシリーズ",
+    "venue": "zozo_marine",
+    "startDate": "2026-03-31",
+    "endDate": "2026-04-02",
+    "expectedAttendance": "large",
+    "type": "sports",
+    "source": "known_events"
+  },
+  {
+    "id": "marines-gw-2026",
+    "name": "千葉ロッテマリーンズ ゴールデンウィークホームゲーム",
+    "venue": "zozo_marine",
+    "startDate": "2026-05-01",
+    "endDate": "2026-05-03",
+    "expectedAttendance": "large",
+    "type": "sports",
+    "source": "known_events"
+  },
+  {
+    "id": "marines-summer-2026",
+    "name": "千葉ロッテマリーンズ サマーホームゲーム",
+    "venue": "zozo_marine",
+    "startDate": "2026-08-07",
+    "endDate": "2026-08-09",
+    "expectedAttendance": "large",
+    "type": "sports",
+    "source": "known_events"
+  },
+  {
+    "id": "mitsui-outlet-summer-sale-2026",
+    "name": "三井アウトレットパーク幕張 サマーセール",
+    "venue": "mitsui_outlet",
+    "startDate": "2026-07-17",
+    "endDate": "2026-07-20",
+    "expectedAttendance": "large",
+    "type": "sale",
+    "source": "known_events"
+  },
+  {
+    "id": "mitsui-outlet-winter-sale-2026",
+    "name": "三井アウトレットパーク幕張 ウィンターセール",
+    "venue": "mitsui_outlet",
+    "startDate": "2026-01-02",
+    "endDate": "2026-01-04",
+    "expectedAttendance": "large",
     "type": "sale",
     "source": "known_events"
   }

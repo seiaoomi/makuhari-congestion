@@ -2,7 +2,8 @@ import Anthropic from '@anthropic-ai/sdk';
 import { NextRequest, NextResponse } from 'next/server';
 import { MakuhariEvent, TrainInfo } from '@/types';
 import { calculateCongestionScore, scoreToLevel, getHourlyPattern } from '@/lib/congestion';
-import { calculateTrainScore, scoreToTrainLevel, getTrainHourlyPattern } from '@/lib/train';
+import { calculateTrainScore, scoreToTrainLevel, getTrainHourlyPattern, calculateToyosunaScore, getToyosunaHourlyPattern } from '@/lib/train';
+import { getVenueLabel } from '@/lib/events';
 import { isHoliday } from 'japanese-holidays';
 
 const client = new Anthropic();
@@ -28,8 +29,13 @@ export async function POST(req: NextRequest) {
   const trainLevel = scoreToTrainLevel(trainScore);
   const trainHourlyPattern = getTrainHourlyPattern(trainScore, events, isWeekend);
 
+  // 幕張豊砂駅スコア
+  const toyosunaScore = calculateToyosunaScore({ date: targetDate, events });
+  const toyosunaLevel = scoreToTrainLevel(toyosunaScore);
+  const toyosunaHourlyPattern = getToyosunaHourlyPattern(toyosunaScore, events, isWeekend);
+
   const eventSummary = events.length > 0
-    ? events.map(e => `・${e.name}（${e.venue === 'makuhari_messe' ? '幕張メッセ' : 'イオンモール/コストコ'}、${e.expectedAttendance}規模）`).join('\n')
+    ? events.map(e => `・${e.name}（${getVenueLabel(e.venue)}、${e.expectedAttendance}規模）`).join('\n')
     : '特になし';
 
   if (!process.env.ANTHROPIC_API_KEY) {
@@ -41,11 +47,12 @@ export async function POST(req: NextRequest) {
       summary: `道路混雑スコア: ${score}/100`,
       events,
       trainInfo: buildDefaultTrainInfo(trainScore, trainLevel, trainHourlyPattern, events, isWeekend),
+      toyosunaInfo: buildDefaultToyosunaInfo(toyosunaScore, toyosunaLevel, toyosunaHourlyPattern, events, isWeekend),
     });
   }
 
   // 道路・電車の理由/アドバイスを1回のAPI呼び出しで生成（トークン節約）
-  const prompt = `あなたは幕張エリア（幕張メッセ・イオンモール幕張新都心・コストコ幕張）の交通専門家です。
+  const prompt = `あなたは幕張エリア（幕張メッセ・ZOZOマリンスタジアム・イオンモール幕張新都心・コストコ幕張）の交通専門家です。
 
 ## 予測対象日
 ${date}（${dayLabel}曜日）
@@ -56,7 +63,7 @@ ${eventSummary}
 ## 道路混雑スコア: ${score}/100（${level}）
 ## 電車混雑スコア（京葉線・海浜幕張駅）: ${trainScore}/100（${trainLevel}）
 
-以下のJSON形式で**道路**と**電車**の情報を分けて返してください：
+以下のJSON形式で**道路**・**海浜幕張駅**・**幕張豊砂駅**の情報を分けて返してください：
 {
   "road": {
     "reasons": ["道路混雑理由1（具体的に）", ...],
@@ -64,15 +71,22 @@ ${eventSummary}
     "summary": "道路サマリー（30文字以内）"
   },
   "train": {
-    "reasons": ["電車混雑理由1（具体的に）", ...],
-    "tips": ["電車回避アドバイス1（時間・乗換を含む）", ...],
-    "summary": "電車サマリー（30文字以内）"
+    "reasons": ["海浜幕張駅混雑理由1（具体的に）", ...],
+    "tips": ["海浜幕張駅回避アドバイス1（時間・乗換を含む）", ...],
+    "summary": "海浜幕張駅サマリー（30文字以内）"
+  },
+  "toyosuna": {
+    "reasons": ["幕張豊砂駅混雑理由1（具体的に）", ...],
+    "tips": ["幕張豊砂駅回避アドバイス1（時間を含む）", ...],
+    "summary": "幕張豊砂駅サマリー（30文字以内）"
   }
 }
 
 注意：
 - 各reasonsは最大4個、各tipsは最大4個
-- 道路は幕張IC・湾岸道路・国道357号、電車は京葉線・海浜幕張駅を中心に
+- 道路は幕張IC・湾岸道路・国道357号、海浜幕張駅は京葉線・幕張メッセ/ZOZOマリン来場者が中心
+- 幕張豊砂駅はイオンモール幕張新都心直結・コストコ幕張最寄り駅（週末の買い物客が中心）
+- ZOZOマリンスタジアムの野球ナイターは18時開始が多く、試合終了後（21〜22時）に帰宅ラッシュ発生
 - JSONのみ返す`;
 
   try {
@@ -100,6 +114,14 @@ ${eventSummary}
         tips: aiData.train?.tips || [],
         summary: aiData.train?.summary || '',
       },
+      toyosunaInfo: {
+        level: toyosunaLevel,
+        score: toyosunaScore,
+        peakHours: toyosunaHourlyPattern,
+        reasons: aiData.toyosuna?.reasons || [],
+        tips: aiData.toyosuna?.tips || [],
+        summary: aiData.toyosuna?.summary || '',
+      },
     });
   } catch (error) {
     console.error('Predict API error:', error);
@@ -111,6 +133,7 @@ ${eventSummary}
       summary: `道路混雑スコア: ${score}/100`,
       events,
       trainInfo: buildDefaultTrainInfo(trainScore, trainLevel, trainHourlyPattern, events, isWeekend),
+      toyosunaInfo: buildDefaultToyosunaInfo(toyosunaScore, toyosunaLevel, toyosunaHourlyPattern, events, isWeekend),
     });
   }
 }
@@ -148,6 +171,32 @@ function buildDefaultRoadReasons(score: number, events: MakuhariEvent[], isWeeke
   if (score >= 75) reasons.push('複数の混雑要因が重なり、道路渋滞が激しくなる見込みです');
   if (reasons.length === 0) reasons.push('通常の平日レベルの交通量が見込まれます');
   return reasons;
+}
+
+function buildDefaultToyosunaInfo(
+  toyosunaScore: number,
+  toyosunaLevel: ReturnType<typeof scoreToTrainLevel>,
+  peakHours: ReturnType<typeof getToyosunaHourlyPattern>,
+  events: MakuhariEvent[],
+  isWeekend: boolean
+): TrainInfo {
+  const reasons: string[] = [];
+  if (events.some(e => e.venue === 'aeon_mall')) {
+    reasons.push('イオンモール幕張新都心のイベントで幕張豊砂駅の利用者が増加します');
+  }
+  if (isWeekend) reasons.push('週末の買い物客でイオンモール・コストコへのアクセスが集中します');
+  if (toyosunaScore >= 75) reasons.push('複数の要因が重なり、幕張豊砂駅が大幅に混雑する見込みです');
+  if (reasons.length === 0) reasons.push('平常の混雑レベルです');
+
+  const tips: string[] = [];
+  if (toyosunaScore >= 50) {
+    tips.push('閉店・閉場時間（20〜21時）の30分以上前または後の乗車をお勧めします');
+    tips.push('海浜幕張駅経由や車での来場も選択肢に入れてください');
+  } else {
+    tips.push('通勤ラッシュ（7:30〜9:00）を避けると快適です');
+  }
+
+  return { level: toyosunaLevel, score: toyosunaScore, peakHours, reasons, tips, summary: `幕張豊砂駅混雑スコア: ${toyosunaScore}/100` };
 }
 
 function buildDefaultRoadTips(score: number, isWeekend: boolean): string[] {

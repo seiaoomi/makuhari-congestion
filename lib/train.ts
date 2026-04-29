@@ -41,8 +41,12 @@ function getTrainEventScore(event: MakuhariEvent): number {
 
   const venueMultiplier: Record<MakuhariEvent['venue'], number> = {
     makuhari_messe: 1.5,  // 海浜幕張駅直結
-    aeon_mall: 0.4,       // 車来場が主体
+    zozo_marine: 1.3,     // 徒歩15分・シャトルバスで京葉線利用多い
+    mitsui_outlet: 0.7,   // 海浜幕張駅から徒歩圏内
+    aeon_mall: 0.4,       // 車来場が主体・幕張豊砂駅利用が多い
     costco: 0.2,          // ほぼ車のみ
+    beach_park: 0.3,
+    toyosuna_park: 0.3,
     other: 0.3,
   };
 
@@ -68,6 +72,7 @@ export function getTrainHourlyPattern(
   const hasExhibition = events.some(e => e.type === 'exhibition' && e.venue === 'makuhari_messe');
   const hasConcert = events.some(e => e.type === 'concert' && e.venue === 'makuhari_messe');
   const hasFestival = events.some(e => e.type === 'festival' && e.venue === 'makuhari_messe');
+  const hasSports = events.some(e => e.type === 'sports' && e.venue === 'zozo_marine');
 
   const patterns: TimeRange[] = [];
 
@@ -87,6 +92,25 @@ export function getTrainHourlyPattern(
     );
   }
 
+  if (hasSports) {
+    // 野球ナイター（18時開始）：終了後に海浜幕張駅へ一斉集中
+    patterns.push(
+      { start: '16:30', end: '18:00', level: 'moderate' },
+      { start: '20:30', end: '22:30', level: score >= 50 ? 'extreme' : 'high' },
+    );
+  }
+
+  // 週末・祝日: 昼間ベースラインをスコアに応じて追加（イベント有無に関わらず）
+  // ※ イベント固有パターンの後に追加するため、重複時はイベント側が優先される
+  if (isWeekend) {
+    const dayPeak: CongestionLevel = score >= 75 ? 'extreme' : score >= 50 ? 'high' : 'moderate';
+    const dayOff: CongestionLevel  = score >= 50 ? 'moderate' : 'low';
+    patterns.push(
+      { start: '10:00', end: '14:00', level: dayPeak },
+      { start: '14:00', end: '18:00', level: dayOff },
+    );
+  }
+
   // 平日通勤ラッシュ（イベント有無に関わらず）
   if (!isWeekend) {
     patterns.push(
@@ -95,10 +119,79 @@ export function getTrainHourlyPattern(
     );
   }
 
-  // 週末・イベントなし: 昼間に緩やかな混雑
-  if (isWeekend && patterns.length === 0) {
+  if (patterns.length === 0) {
+    patterns.push({ start: '07:30', end: '09:00', level: 'low' });
+  }
+
+  return patterns;
+}
+
+// ── 幕張豊砂駅（京葉線）──
+// イオンモール幕張新都心と直結、コストコ幕張の最寄り駅。買い物客主体で混雑。
+
+export function calculateToyosunaScore(params: {
+  date: Date;
+  events: MakuhariEvent[];
+}): number {
+  const { date, events } = params;
+  const dayOfWeek = date.getDay();
+  const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+  const isFriday = dayOfWeek === 5;
+
+  let score = isWeekend ? 20 : isFriday ? 15 : 10;
+  if (isHoliday(date)) score += 15;
+  score += getSpecialSeasonBonus(date);
+
+  for (const event of events) {
+    score += getToyosunaEventScore(event);
+  }
+
+  return Math.min(100, score);
+}
+
+function getToyosunaEventScore(event: MakuhariEvent): number {
+  const attendanceScore: Record<MakuhariEvent['expectedAttendance'], number> = {
+    small: 5, medium: 15, large: 35, massive: 55,
+  };
+  const venueMultiplier: Record<MakuhariEvent['venue'], number> = {
+    aeon_mall: 1.2,       // 駅直結
+    costco: 0.3,          // 最寄り駅だが車来場が大半
+    beach_park: 0.3,
+    toyosuna_park: 0.3,
+    mitsui_outlet: 0.1,   // 海浜幕張駅の方が近い
+    makuhari_messe: 0.1,
+    zozo_marine: 0.1,
+    other: 0.2,
+  };
+  return Math.round(attendanceScore[event.expectedAttendance] * venueMultiplier[event.venue]);
+}
+
+export function getToyosunaHourlyPattern(
+  score: number,
+  events: MakuhariEvent[],
+  isWeekend: boolean
+): TimeRange[] {
+  const hasSale = events.some(e =>
+    e.type === 'sale' && (e.venue === 'aeon_mall' || e.venue === 'mitsui_outlet')
+  );
+
+  const patterns: TimeRange[] = [];
+
+  // 週末・祝日・セール: 買い物客で昼間混雑（スコアに応じてレベル変動）
+  if (isWeekend || hasSale) {
+    const dayPeak: CongestionLevel = score >= 75 ? 'extreme' : score >= 50 ? 'high' : 'moderate';
+    const dayOff: CongestionLevel  = score >= 50 ? 'moderate' : 'low';
     patterns.push(
-      { start: '10:00', end: '14:00', level: 'moderate' },
+      { start: '11:00', end: '15:00', level: dayPeak },
+      { start: '15:00', end: '18:00', level: dayOff },
+    );
+  }
+
+  // 平日通勤ラッシュ
+  if (!isWeekend) {
+    patterns.push(
+      { start: '07:30', end: '09:00', level: 'moderate' },
+      { start: '18:00', end: '20:00', level: 'moderate' },
     );
   }
 
